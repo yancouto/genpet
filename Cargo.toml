@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 description = "Generate petgraph graphs with geng."
 license = "MIT OR Apache-2.0"
+authors = ["Eric Brandwein <brandweineric@gmail.com>"]
+repository = "https://github.com/ericbrandwein/genpet"
+keywords = ["graph-theory", "geng", "petgraph", "graphs"]
+categories = ["development-tools::ffi", "mathematics"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
