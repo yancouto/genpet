@@ -1,3 +1,4 @@
+use std::ops::{Bound, RangeBounds};
 use std::process::Command;
 use std::str;
 use GengOption::*;
@@ -43,13 +44,26 @@ impl GengOption {
     }
 }
 
-pub fn call_geng_with_args(vertices: usize, options: &[GengOption]) -> String {
+pub fn call_geng_with_args(
+    vertices: usize,
+    m: impl RangeBounds<usize>,
+    options: &[GengOption],
+) -> String {
     let mut args: Vec<String> = options.iter().map(|option| option.to_string()).collect();
     args.push(vertices.to_string());
+    let left = match m.start_bound() {
+        Bound::Included(x) => *x,
+        Bound::Excluded(x) => x + 1,
+        Bound::Unbounded => 0,
+    };
+    let right = match m.end_bound() {
+        Bound::Included(x) => *x,
+        Bound::Excluded(x) => x - 1,
+        Bound::Unbounded => (vertices * (vertices - 1)) / 2,
+    };
+    args.push(dbg!(format!("{}:{}", left, right)));
     args.push(SUPPRESS_AUXILIARY_OUTPUT.to_owned());
-    get_command_output_string(
-        Command::new(GENG_EXECUTABLE).args(args)
-    )
+    get_command_output_string(Command::new(GENG_EXECUTABLE).args(args))
 }
 
 fn get_command_output_string(command: &mut Command) -> String {
