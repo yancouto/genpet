@@ -14,13 +14,10 @@ pub fn generate_graphs(
     n: usize,
     m: impl RangeBounds<usize>,
     options: &[geng::GengOption],
-) -> impl Iterator<Item = UnGraph<(), ()>> {
-    let output: String = geng::call_geng_with_args(n, m, options);
-    let lines: Vec<String> = output.lines().map(|line| line.to_owned()).collect();
-    lines
-        .into_iter()
+) -> std::io::Result<impl Iterator<Item = UnGraph<(), ()>>> {
+    Ok(geng::call_geng_with_args(n, m, options)?
         .map(graph6_to_graph)
-        .map(graph_to_petgraph)
+        .map(graph_to_petgraph))
 }
 
 fn graph6_to_graph(graph6: String) -> Graph {

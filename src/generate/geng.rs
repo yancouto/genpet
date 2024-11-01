@@ -1,3 +1,4 @@
+use std::io::{BufRead, BufReader};
 use std::ops::{Bound, RangeBounds};
 use std::process::Command;
 use std::str;
@@ -48,7 +49,7 @@ pub fn call_geng_with_args(
     vertices: usize,
     m: impl RangeBounds<usize>,
     options: &[GengOption],
-) -> String {
+) -> std::io::Result<impl Iterator<Item = String>> {
     let mut args: Vec<String> = options.iter().map(|option| option.to_string()).collect();
     args.push(vertices.to_string());
     let left = match m.start_bound() {
@@ -63,14 +64,14 @@ pub fn call_geng_with_args(
     };
     args.push(dbg!(format!("{}:{}", left, right)));
     args.push(SUPPRESS_AUXILIARY_OUTPUT.to_owned());
-    get_command_output_string(Command::new(GENG_EXECUTABLE).args(args))
+    get_command_output(Command::new(GENG_EXECUTABLE).args(args))
 }
 
-fn get_command_output_string(command: &mut Command) -> String {
-    let output = command.output().expect("failed to execute process");
-    to_string(&output.stdout)
-}
+fn get_command_output(command: &mut Command) -> std::io::Result<impl Iterator<Item = String>> {
+    let mut child = command.stdout(std::process::Stdio::piped()).spawn()?;
 
-fn to_string(vec: &[u8]) -> String {
-    str::from_utf8(&vec).expect("Invalid UTF-8").to_string()
+    let stdout = child.stdout.take().expect("failed to capture stdout");
+    Ok(BufReader::new(stdout)
+        .lines()
+        .map(|line| line.expect("failed to read line")))
 }
