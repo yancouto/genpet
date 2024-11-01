@@ -1,8 +1,9 @@
 use std::ops::RangeBounds;
 
-use graph6_rs::Graph;
 use petgraph::graph::UnGraph;
 pub mod geng;
+
+use crate::Graph;
 
 /// Generate graphs using the geng program from nauty.
 ///
@@ -14,17 +15,15 @@ pub fn generate_graphs(
     n: usize,
     m: impl RangeBounds<usize>,
     options: &[geng::GengOption],
-) -> std::io::Result<impl Iterator<Item = UnGraph<(), ()>>> {
-    Ok(geng::call_geng_with_args(n, m, options)?
-        .map(graph6_to_graph)
-        .map(graph_to_petgraph))
+) -> std::io::Result<impl Iterator<Item = Graph>> {
+    Ok(geng::call_geng_with_args(n, m, options)?.map(graph6_to_graph))
 }
 
 fn graph6_to_graph(graph6: String) -> Graph {
     Graph::from_g6(&graph6).expect(format!("Invalid graph6 string: {}", graph6).as_str())
 }
 
-fn graph_to_petgraph(graph6: Graph) -> UnGraph<(), ()> {
+pub fn graph_to_petgraph(graph6: Graph) -> UnGraph<(), ()> {
     let mut graph = UnGraph::new_undirected();
     let nodes: Vec<_> = (0..graph6.n).map(|_| graph.add_node(())).collect();
 
